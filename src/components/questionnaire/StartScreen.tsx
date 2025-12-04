@@ -1,14 +1,15 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { UserType, TelegramUser } from "@/types/questionnaire";
-import { User, Users, Baby } from "lucide-react";
+import { UserType, AuthUser, TelegramUser } from "@/types/questionnaire";
+import { User, Users, Baby, MessageCircle, Instagram } from "lucide-react";
 
 interface StartScreenProps {
   onSelect: (type: UserType) => void;
-  telegramUser: TelegramUser;
+  authUser: AuthUser;
+  telegramUser?: TelegramUser; // Для обратной совместимости
 }
 
-export const StartScreen = ({ onSelect, telegramUser }: StartScreenProps) => {
+export const StartScreen = ({ onSelect, authUser, telegramUser }: StartScreenProps) => {
   const options = [
     { type: "woman" as UserType, label: "Женщина", icon: User },
     { type: "man" as UserType, label: "Мужчина", icon: Users },
@@ -50,13 +51,28 @@ export const StartScreen = ({ onSelect, telegramUser }: StartScreenProps) => {
           <p className="text-muted-foreground text-lg mb-4">
             Пожалуйста, ответьте на несколько вопросов
           </p>
-          {telegramUser && (
+          {authUser && (
             <div className="bg-muted/50 rounded-lg p-3 mb-4 text-sm">
-              <p className="text-muted-foreground">
-                Вы авторизованы как: <span className="font-semibold text-foreground">
-                  {telegramUser.first_name}
-                  {telegramUser.last_name && ` ${telegramUser.last_name}`}
-                  {telegramUser.username && ` (@${telegramUser.username})`}
+              <p className="text-muted-foreground flex items-center justify-center gap-2">
+                {authUser.platform === "telegram" ? (
+                  <MessageCircle className="w-4 h-4" />
+                ) : (
+                  <Instagram className="w-4 h-4" />
+                )}
+                Вы авторизованы через {authUser.platform === "telegram" ? "Telegram" : "Instagram"} как:{" "}
+                <span className="font-semibold text-foreground">
+                  {authUser.platform === "telegram" ? (
+                    <>
+                      {authUser.user.first_name}
+                      {authUser.user.last_name && ` ${authUser.user.last_name}`}
+                      {authUser.user.username && ` (@${authUser.user.username})`}
+                    </>
+                  ) : (
+                    <>
+                      @{authUser.user.username}
+                      {authUser.user.full_name && ` (${authUser.user.full_name})`}
+                    </>
+                  )}
                 </span>
               </p>
             </div>

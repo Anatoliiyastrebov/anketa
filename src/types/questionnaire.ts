@@ -20,6 +20,8 @@ export interface QuestionGroup {
   questions: Question[];
 }
 
+export type AuthPlatform = "telegram" | "instagram";
+
 export interface TelegramUser {
   id: number;
   first_name: string;
@@ -30,8 +32,27 @@ export interface TelegramUser {
   photo_url?: string;
 }
 
+export interface InstagramUser {
+  username: string;
+  full_name?: string;
+  profile_picture?: string;
+}
+
+export type AuthUser = 
+  | { platform: "telegram"; user: TelegramUser }
+  | { platform: "instagram"; user: InstagramUser };
+
+export interface ContactInfo {
+  instagram?: string;
+  telegram?: string;
+  phone?: string;
+  email?: string;
+}
+
 export interface FormData {
   userType: UserType;
   answers: Record<string, string | string[] | number>;
-  telegramUser?: TelegramUser;
+  authUser?: AuthUser;
+  telegramUser?: TelegramUser; // Для обратной совместимости
+  contactInfo?: ContactInfo;
 }

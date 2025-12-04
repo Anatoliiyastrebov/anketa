@@ -4,8 +4,11 @@ import { StartScreen } from "./StartScreen";
 import { QuestionStep } from "./QuestionStep";
 import { ProgressBar } from "./ProgressBar";
 import { ThankYouScreen } from "./ThankYouScreen";
+import { AuthPlatformSelect } from "./AuthPlatformSelect";
 import { TelegramAuth } from "./TelegramAuth";
-import { UserType, FormData, TelegramUser } from "@/types/questionnaire";
+import { InstagramAuth } from "./InstagramAuth";
+import { ContactInfoForm } from "./ContactInfo";
+import { UserType, FormData, AuthUser, AuthPlatform, TelegramUser, InstagramUser, ContactInfo } from "@/types/questionnaire";
 import { getQuestionsForUserType } from "@/data/questions";
 import { sendToTelegram } from "@/utils/telegram";
 import { toast } from "sonner";
@@ -13,7 +16,9 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const Questionnaire = () => {
-  const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(null);
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [selectedPlatform, setSelectedPlatform] = useState<AuthPlatform | null>(null);
+  const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
   const [userType, setUserType] = useState<UserType>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[] | number>>({});
@@ -56,10 +61,15 @@ export const Questionnaire = () => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     
+    // Для обратной совместимости сохраняем telegramUser
+    const telegramUser = authUser?.platform === "telegram" ? authUser.user : undefined;
+    
     const formData: FormData = {
       userType,
       answers,
-      telegramUser: telegramUser || undefined,
+      authUser: authUser || undefined,
+      telegramUser,
+      contactInfo: contactInfo || undefined,
     };
 
     // Log the data to console for debugging
@@ -86,15 +96,63 @@ export const Questionnaire = () => {
     setUserType(null);
     setCurrentStep(0);
     setAnswers({});
+    setContactInfo(null);
+    setAuthUser(null);
+    setSelectedPlatform(null);
     setIsComplete(false);
   };
 
-  const handleTelegramAuth = (user: TelegramUser) => {
-    setTelegramUser(user);
+  const handlePlatformSelect = (platform: AuthPlatform) => {
+    setSelectedPlatform(platform);
   };
 
-  if (!telegramUser) {
-    return <TelegramAuth onAuth={handleTelegramAuth} />;
+  const handleTelegramAuth = (user: TelegramUser) => {
+    setAuthUser({ platform: "telegram", user });
+  };
+
+  const handleInstagramAuth = (user: InstagramUser) => {
+    setAuthUser({ platform: "instagram", user });
+  };
+
+  const handleBackToPlatformSelect = () => {
+    setSelectedPlatform(null);
+    setAuthUser(null);
+  };
+
+  const handleContactInfoSubmit = (info: ContactInfo) => {
+    setContactInfo(info);
+  };
+
+  const handleContactInfoSkip = () => {
+    setContactInfo({});
+  };
+
+  // Выбор платформы авторизации
+  if (!selectedPlatform) {
+    return <AuthPlatformSelect onSelect={handlePlatformSelect} />;
+  }
+
+  // Авторизация через выбранную платформу
+  if (!authUser) {
+    if (selectedPlatform === "telegram") {
+      return <TelegramAuth onAuth={handleTelegramAuth} onBack={handleBackToPlatformSelect} />;
+    } else {
+      return <InstagramAuth onAuth={handleInstagramAuth} onBack={handleBackToPlatformSelect} />;
+    }
+  }
+
+  // Форма контактной информации
+  if (!contactInfo) {
+    const telegramUser = authUser.platform === "telegram" ? authUser.user : undefined;
+    const instagramUser = authUser.platform === "instagram" ? authUser.user : undefined;
+    return (
+      <ContactInfoForm
+        telegramUser={telegramUser}
+        instagramUser={instagramUser}
+        onSubmit={handleContactInfoSubmit}
+        onSkip={handleContactInfoSkip}
+      />
+    );
   }
 
   if (isComplete) {
@@ -102,7 +160,8 @@ export const Questionnaire = () => {
   }
 
   if (!userType) {
-    return <StartScreen onSelect={handleUserTypeSelect} telegramUser={telegramUser} />;
+    const telegramUser = authUser.platform === "telegram" ? authUser.user : undefined;
+    return <StartScreen onSelect={handleUserTypeSelect} authUser={authUser} telegramUser={telegramUser} />;
   }
 
   return (
