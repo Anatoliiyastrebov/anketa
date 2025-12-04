@@ -1,0 +1,5 @@
+/* Custom styles - most styling is handled via Tailwind and the design system */
+
+#root {
+  min-height: 100vh;
+}
