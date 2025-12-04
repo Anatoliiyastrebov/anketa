@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { StartScreen } from "./StartScreen";
 import { QuestionStep } from "./QuestionStep";
@@ -8,6 +8,7 @@ import { AuthPlatformSelect } from "./AuthPlatformSelect";
 import { TelegramAuth } from "./TelegramAuth";
 import { InstagramAuth } from "./InstagramAuth";
 import { ContactInfoForm } from "./ContactInfo";
+import { GDPRConsent } from "./GDPRConsent";
 import { UserType, FormData, AuthUser, AuthPlatform, TelegramUser, InstagramUser, ContactInfo } from "@/types/questionnaire";
 import { getQuestionsForUserType } from "@/data/questions";
 import { sendToTelegram } from "@/utils/telegram";
@@ -18,12 +19,29 @@ import { Button } from "@/components/ui/button";
 export const Questionnaire = () => {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [selectedPlatform, setSelectedPlatform] = useState<AuthPlatform | null>(null);
+  const [gdprConsent, setGdprConsent] = useState<boolean>(false);
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
   const [userType, setUserType] = useState<UserType>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[] | number>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+
+  // Проверяем наличие согласия при монтировании компонента
+  useEffect(() => {
+    const consentData = localStorage.getItem("gdpr_consent");
+    if (consentData) {
+      try {
+        const consent = JSON.parse(consentData);
+        if (consent.accepted === true) {
+          setGdprConsent(true);
+        }
+      } catch (e) {
+        // Если данные повреждены, считаем что согласия нет
+        localStorage.removeItem("gdpr_consent");
+      }
+    }
+  }, []);
 
   const questions = userType ? getQuestionsForUserType(userType) : [];
   const totalSteps = questions.length;
@@ -99,7 +117,21 @@ export const Questionnaire = () => {
     setContactInfo(null);
     setAuthUser(null);
     setSelectedPlatform(null);
+    setGdprConsent(false);
     setIsComplete(false);
+    // Удаляем согласие при сбросе
+    localStorage.removeItem("gdpr_consent");
+  };
+
+  const handleGDPRAccept = () => {
+    setGdprConsent(true);
+  };
+
+  const handleGDPRDecline = () => {
+    toast.error("Без согласия на обработку данных мы не можем обработать вашу анкету");
+    // Можно вернуться к выбору платформы или показать сообщение
+    setAuthUser(null);
+    setSelectedPlatform(null);
   };
 
   const handlePlatformSelect = (platform: AuthPlatform) => {
@@ -139,6 +171,11 @@ export const Questionnaire = () => {
     } else {
       return <InstagramAuth onAuth={handleInstagramAuth} onBack={handleBackToPlatformSelect} />;
     }
+  }
+
+  // Согласие на обработку данных (GDPR) - показываем после авторизации
+  if (!gdprConsent) {
+    return <GDPRConsent onAccept={handleGDPRAccept} onDecline={handleGDPRDecline} />;
   }
 
   // Форма контактной информации

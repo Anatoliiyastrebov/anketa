@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, RotateCcw } from "lucide-react";
+import { CheckCircle2, RotateCcw, Shield, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface ThankYouScreenProps {
   onReset: () => void;
@@ -46,8 +47,37 @@ export const ThankYouScreen = ({ onReset }: ThankYouScreenProps) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.5 }}
+          className="space-y-4"
         >
-          <Button variant="outline" size="lg" onClick={onReset}>
+          <div className="bg-muted/50 rounded-lg p-4 text-sm text-left">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="w-4 h-4 text-primary" />
+              <span className="font-semibold text-foreground">Ваши права:</span>
+            </div>
+            <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-2">
+              <li>Вы можете запросить доступ к вашим данным</li>
+              <li>Вы можете потребовать исправления или удаления данных</li>
+              <li>Вы можете отозвать согласие в любое время</li>
+            </ul>
+            <p className="mt-3 text-xs text-muted-foreground">
+              По вопросам обработки данных обращайтесь через{" "}
+              <a 
+                href="https://t.me/+S3Ru-enHHixkY2Yy" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-primary hover:underline"
+              >
+                Telegram группу
+              </a>
+              {" "}или ознакомьтесь с{" "}
+              <Link to="/privacy" className="text-primary hover:underline inline-flex items-center gap-1">
+                Политикой конфиденциальности
+                <ExternalLink className="w-3 h-3" />
+              </Link>
+            </p>
+          </div>
+
+          <Button variant="outline" size="lg" onClick={onReset} className="w-full">
             <RotateCcw className="w-4 h-4 mr-2" />
             Заполнить ещё раз
           </Button>
