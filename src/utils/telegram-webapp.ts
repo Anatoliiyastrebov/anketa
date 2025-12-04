@@ -116,6 +116,12 @@ export const getTelegramUser = () => {
     return null;
   }
 
+  // Валидация обязательных полей
+  if (!user.id || !user.first_name) {
+    console.error("Invalid Telegram user data: missing required fields");
+    return null;
+  }
+
   return {
     id: user.id,
     first_name: user.first_name,
@@ -124,6 +130,58 @@ export const getTelegramUser = () => {
     language_code: user.language_code,
     is_premium: user.is_premium,
     photo_url: user.photo_url,
+  };
+};
+
+/**
+ * Проверяет, что initData содержит валидные данные пользователя
+ */
+export const validateTelegramInitData = (): boolean => {
+  if (!isTelegramWebApp()) {
+    return false;
+  }
+
+  const initData = window.Telegram?.WebApp?.initData;
+  const initDataUnsafe = window.Telegram?.WebApp?.initDataUnsafe;
+  
+  if (!initData || !initDataUnsafe) {
+    return false;
+  }
+
+  const user = initDataUnsafe.user;
+  if (!user || !user.id || !user.first_name) {
+    return false;
+  }
+
+  // Проверяем, что initData не пустая
+  if (initData.trim().length === 0) {
+    return false;
+  }
+
+  return true;
+};
+
+/**
+ * Получает полную информацию о пользователе Telegram
+ */
+export const getTelegramUserInfo = () => {
+  if (!isTelegramWebApp()) {
+    return null;
+  }
+
+  const user = getTelegramUser();
+  if (!user) {
+    return null;
+  }
+
+  const webApp = window.Telegram?.WebApp;
+  
+  return {
+    user,
+    platform: webApp?.platform || "unknown",
+    version: webApp?.version || "unknown",
+    isExpanded: webApp?.isExpanded || false,
+    themeParams: webApp?.themeParams || {},
   };
 };
 

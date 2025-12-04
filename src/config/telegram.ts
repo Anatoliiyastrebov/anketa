@@ -22,6 +22,8 @@ export const TELEGRAM_CONFIG = {
   BOT_TOKEN: import.meta.env.VITE_TELEGRAM_BOT_TOKEN || "8348191426:AAFSipqYQpzfxvx-ICEVttfoJDo3XGzHE8Q",
   // Chat ID группы "Анкета" (https://t.me/+S3Ru-enHHixkY2Yy)
   CHAT_ID: import.meta.env.VITE_TELEGRAM_CHAT_ID || "-5004769540",
+  // Имя бота для Telegram Login Widget (без @)
+  BOT_USERNAME: import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "ZdorovAnketaBot",
 };
 
 export const isTelegramConfigured = () => {

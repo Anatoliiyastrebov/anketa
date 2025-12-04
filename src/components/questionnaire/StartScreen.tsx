@@ -52,30 +52,52 @@ export const StartScreen = ({ onSelect, authUser, telegramUser }: StartScreenPro
             Пожалуйста, ответьте на несколько вопросов
           </p>
           {authUser && (
-            <div className="bg-muted/50 rounded-lg p-3 mb-4 text-sm">
-              <p className="text-muted-foreground flex items-center justify-center gap-2">
-                {authUser.platform === "telegram" ? (
-                  <MessageCircle className="w-4 h-4" />
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-muted/50 rounded-lg p-4 mb-4"
+            >
+              <div className="flex items-center gap-3">
+                {authUser.platform === "telegram" && authUser.user.photo_url ? (
+                  <img
+                    src={authUser.user.photo_url}
+                    alt={authUser.user.first_name}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
                 ) : (
-                  <Instagram className="w-4 h-4" />
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    {authUser.platform === "telegram" ? (
+                      <MessageCircle className="w-5 h-5 text-primary" />
+                    ) : (
+                      <Instagram className="w-5 h-5 text-primary" />
+                    )}
+                  </div>
                 )}
-                Вы авторизованы через {authUser.platform === "telegram" ? "Telegram" : "Instagram"} как:{" "}
-                <span className="font-semibold text-foreground">
-                  {authUser.platform === "telegram" ? (
-                    <>
-                      {authUser.user.first_name}
-                      {authUser.user.last_name && ` ${authUser.user.last_name}`}
-                      {authUser.user.username && ` (@${authUser.user.username})`}
-                    </>
-                  ) : (
-                    <>
-                      @{authUser.user.username}
-                      {authUser.user.full_name && ` (${authUser.user.full_name})`}
-                    </>
-                  )}
-                </span>
-              </p>
-            </div>
+                <div className="flex-1 text-sm">
+                  <p className="text-muted-foreground">
+                    Вы авторизованы через {authUser.platform === "telegram" ? "Telegram" : "Instagram"}
+                  </p>
+                  <p className="font-semibold text-foreground">
+                    {authUser.platform === "telegram" ? (
+                      <>
+                        {authUser.user.first_name}
+                        {authUser.user.last_name && ` ${authUser.user.last_name}`}
+                        {authUser.user.username && (
+                          <span className="text-muted-foreground font-normal"> @{authUser.user.username}</span>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        @{authUser.user.username}
+                        {authUser.user.full_name && (
+                          <span className="text-muted-foreground font-normal"> ({authUser.user.full_name})</span>
+                        )}
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
           )}
         </motion.div>
 
